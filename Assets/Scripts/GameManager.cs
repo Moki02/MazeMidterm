@@ -48,8 +48,6 @@ public class GameManager : MonoBehaviour
         SpawnWalls(mediumCount, mediumSize);
         SpawnWalls(smallCount, smallSize);
     }
-
-    // 🧭 Step 1: Generate a single-cell clear path from start to finish
     void GeneratePath()
     {
         pathCells.Clear();
@@ -64,14 +62,13 @@ public class GameManager : MonoBehaviour
         Vector2Int current = startCell;
         pathCells.Add(current);
 
-        // Carve a guaranteed direct path with a few turns
+
         System.Random rand = new System.Random();
 
         while (current != finishCell)
         {
             Vector2Int step = Vector2Int.zero;
 
-            // Randomly prefer horizontal or vertical movement
             if (rand.NextDouble() < 0.5)
             {
                 if (current.x < finishCell.x) step = Vector2Int.right;
@@ -83,7 +80,7 @@ public class GameManager : MonoBehaviour
                 else if (current.y > finishCell.y) step = Vector2Int.down;
             }
 
-            // Prevent getting stuck
+
             if (step == Vector2Int.zero)
             {
                 if (current.x != finishCell.x) step.x = current.x < finishCell.x ? 1 : -1;
@@ -95,12 +92,11 @@ public class GameManager : MonoBehaviour
             pathCells.Add(current);
         }
 
-        // Convert path to world points (for gizmo)
+
         foreach (var cell in pathCells)
             pathPoints.Add(GridToWorld(cell));
     }
 
-    // 🧱 Step 2: Spawn walls randomly inside grid cells — but never on the path or near start/finish
     void SpawnWalls(int count, Vector3 size)
     {
         System.Random rand = new System.Random();
@@ -118,19 +114,16 @@ public class GameManager : MonoBehaviour
             int z = rand.Next(0, gridHeight);
             Vector2Int cell = new Vector2Int(x, z);
 
-            // Skip path, start, and finish cells
+
             if (pathCells.Contains(cell)) continue;
             if (Vector2Int.Distance(cell, startCell) <= 1) continue;
             if (Vector2Int.Distance(cell, finishCell) <= 1) continue;
 
-            // Convert to world position
             Vector3 pos = GridToWorld(cell);
 
-            // 90-degree rotations only
             float rotY = 90f * rand.Next(0, 4);
             Quaternion rot = Quaternion.Euler(0f, rotY, 0f);
 
-            // Create the wall
             GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             wall.transform.position = new Vector3(pos.x, spawnY, pos.z);
             wall.transform.localScale = size;
@@ -150,7 +143,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // 🔧 Helper Functions
     Vector2Int ClampToGrid(Vector2Int cell)
     {
         cell.x = Mathf.Clamp(cell.x, 0, gridWidth - 1);
@@ -170,7 +162,6 @@ public class GameManager : MonoBehaviour
         return new Vector3(offsetX + gridPos.x * cellSize, spawnY, offsetZ + gridPos.y * cellSize);
     }
 
-    // 🧭 Draw grid + path
     void OnDrawGizmos()
     {
         offsetX = -((gridWidth - 1) * cellSize) / 2f;
